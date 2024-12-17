@@ -1,68 +1,260 @@
-/* Reset and Full-Screen Setup */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html,
 body {
+  margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #f7f1e3; /* Neutral background */
+  font-family: sans-serif;
+  background: #f0f0f0;
+  color: #333;
 }
 
-/* Full-Screen Envelope Container */
 .envelope-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  perspective: 1500px;
+  background: #f0f0f0;
+}
+
+/* Button styling */
+.toggle-button {
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 10; /* On top of envelope */
+  transition: all 0.3s ease;
+}
+
+.toggle-button.open {
+  background: #555;
+  color: #fff;
+}
+
+/* Envelope scaling and base transforms */
+.envelope {
+  width: 90vmin;
+  height: calc(90vmin * 0.6);
   position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(0deg) rotateY(0deg);
+  /* Add a subtle drop-shadow to create depth against the background */
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+}
+
+/* Thickness variable */
+:root {
+  --env-thickness: 5px;
+}
+
+/* Envelope Body as a thin 3D box */
+.envelope-body {
+  position: absolute;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  perspective: 1500px; /* Enables 3D effect */
-  overflow: hidden;
+  transform-style: preserve-3d;
 }
 
-/* Envelope */
-.envelope {
-  position: relative;
-  width: 90%;
-  max-width: 500px;
-  height: 60vh;
-  background: url("envelope.png") no-repeat center/cover;
-  border: 5px solid #d4af37;
-  border-radius: 8px;
-  transform-style: preserve-3d; /* 3D effect for children */
-  overflow: hidden; /* Hide content until animation */
+.envelope-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  /* Use your provided image directly */
+  background: url("") no-repeat center/cover;
+
+  border: 1px solid #ccc;
+  border-radius: 4px;
+
+  /* Remove any transforms or overlays that distort the image */
+  /* transform: translateZ(calc(var(--env-thickness) * -0.5)); */
+  backface-visibility: hidden;
+  /* z-index: 2; */
+
+  /* Remove inner shadows or additional effects that obscure the image */
+  box-shadow: none;
 }
 
-/* Flap */
-.flap {
+/* Also remove pseudo-elements from envelope-front if previously added */
+.envelope-front::before,
+.envelope-front::after {
+  content: none;
+}
+
+/* Back face */
+.envelope-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transform: translateZ(calc(var(--env-thickness) * 0.5)) rotateY(180deg);
+  backface-visibility: hidden;
+  z-index: 1;
+}
+
+/* Bottom thickness strip */
+.envelope-bottom {
+  position: absolute;
+  width: 100%;
+  height: var(--env-thickness);
+  bottom: calc((var(--env-thickness) * -0.5));
+  left: 0;
+  background: #ddd;
+  transform: rotateX(90deg);
+  transform-origin: top center;
+}
+
+/* Left thickness side */
+.envelope-left {
+  position: absolute;
+  width: var(--env-thickness);
+  height: 100%;
+  background: #ddd;
+  left: calc((var(--env-thickness) * -0.5));
+  transform: rotateY(90deg);
+  transform-origin: left center;
+}
+
+/* Right thickness side */
+.envelope-right {
+  position: absolute;
+  width: var(--env-thickness);
+  height: 100%;
+  background: #ddd;
+  right: calc((var(--env-thickness) * -0.5));
+  transform: rotateY(-90deg);
+  transform-origin: right center;
+}
+
+/* Envelope flap: create a triangular flap using clip-path */
+.envelope-flap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  /* clip-path: polygon(50% 0%, 100% 50%, 0% 50%); */
+  transform-origin: top center;
+  backface-visibility: hidden;
+  transform: translateZ(calc(var(--env-thickness) * -0.5)) rotateX(0deg);
+  z-index: 3;
+  /* Add a subtle gradient to simulate light hitting the flap differently */
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.95),
+      rgba(230, 230, 230, 0.8)
+    ),
+    url("envelope.png") center/cover;
+  background-blend-mode: multiply;
+  /* Slight crease at top via box-shadow */
+  box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Pseudo-elements for subtle creases/edges on front face */
+.envelope-front::before,
+.envelope-front::after {
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 50%;
-  background-color: transparent; /* Remove visible block */
-  transform-origin: top;
-  z-index: 3;
+  height: 100%;
+  pointer-events: none;
 }
 
-/* Invitation */
-.invitation {
+.envelope-front::before {
+  /* Light-to-dark gradient to simulate top-left shading */
+  background: linear-gradient(
+    to bottom right,
+    rgba(0, 0, 0, 0.03),
+    transparent 70%
+  );
+}
+
+.envelope-front::after {
+  /* Subtle linear gradient from top to bottom to add depth */
+  background: linear-gradient(to bottom, transparent 80%, rgba(0, 0, 0, 0.03));
+}
+
+/* Initial letter state inside envelope */
+.envelope-letter {
   position: absolute;
-  bottom: -100%; /* Start fully hidden */
+  width: 80%;
+  height: 60%;
+
+  /* Only the invitation image, no gradients, no paper texture */
+  background: url("invitation.png") center/contain no-repeat;
+
+  /* Remove border, radius, shadows, or anything else if you don't want them */
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  opacity: 0; /* Initially hidden */
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transform: translate(-50%, -50%) translateY(0);
+  opacity: 0;
+  transition: all 0.3s ease;
   z-index: 1;
 }
 
-.invitation-image {
-  width: 100%;
-  height: auto;
-  display: block;
+/* On open, make it full screen, still only the image */
+.envelope-container.open .envelope-letter {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+
+  /* Same image, just bigger area, still no other backgrounds */
+  background: url("invitation.png") center/contain no-repeat;
+
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  transition-delay: 0.3s;
+  z-index: 9999;
+}
+
+.envelope-letter h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.envelope-letter p {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+/* Closed state */
+.envelope-container:not(.open) .envelope-flap {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(calc(var(--env-thickness) * -0.5)) rotateX(0deg);
+}
+
+.envelope-container:not(.open) .envelope-letter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Open state */
+.envelope-container.open .envelope-flap {
+  transform: translateZ(calc(var(--env-thickness) * -0.5)) rotateX(-120deg);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -1,28 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Opening Envelope</title>
-  <link rel="stylesheet" href="styles.css" />
-  <!-- GSAP Animation Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-</head>
-<body>
-  <div class="envelope-container">
-    <!-- 3D Envelope -->
-    <div class="envelope" id="envelope">
-      <div class="flap" id="flap"></div>
-      <div class="body"></div>
-      <div class="invitation" id="invitation">
-        <img src="invitation.png" alt="Invitation" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Envelope with Invitation</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Add 3D styles */
+      .envelope-container {
+        perspective: 1000px;
+      }
+      .envelope {
+        transform-style: preserve-3d;
+        transition: transform 1s;
+      }
+      .envelope.open {
+        transform: rotateX(-30deg);
+      }
+      .envelope-body,
+      .envelope-flap,
+      .envelope-letter {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+      }
+      .envelope-body {
+        transform: rotateX(0deg);
+      }
+      .envelope-flap {
+        transform: rotateX(-90deg);
+        transform-origin: top;
+      }
+      .envelope.open .envelope-flap {
+        transform: rotateX(0deg);
+      }
+      .envelope-letter {
+        transform: rotateX(90deg);
+        transform-origin: bottom;
+      }
+      .envelope.open .envelope-letter {
+        transform: rotateX(0deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="envelope-container">
+      <div class="envelope">
+        <div class="envelope-body">
+          <div class="envelope-back"></div>
+          <div class="envelope-front"></div>
+          <div class="envelope-bottom"></div>
+          <div class="envelope-left"></div>
+          <div class="envelope-right"></div>
+        </div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-letter">
+          <!-- No textual content needed; the image is handled via CSS background -->
+        </div>
       </div>
+      <button class="toggle-button" onclick="toggleEnvelope()">Нээх</button>
     </div>
-  </div>
 
-  <!-- Audio for Envelope Open -->
-  <audio id="openSound" src="open.mp3" preload="auto"></audio>
-
-  <script src="script.js"></script>
-</body>
+    <script>
+      function toggleEnvelope() {
+        const container = document.querySelector(".envelope-container");
+        const button = document.querySelector(".toggle-button");
+        container.classList.toggle("open");
+        if (container.classList.contains("open")) {
+          button.textContent = "Хаах";
+          button.classList.add("open");
+        } else {
+          button.textContent = "Нээх";
+          button.classList.remove("open");
+        }
+      }
+    </script>
+  </body>
 </html>
